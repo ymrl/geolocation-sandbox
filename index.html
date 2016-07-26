@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBN7W-x8_HjqkTQFdznRZ9r_HEAgEKOkvU"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <style>
+      body {
+        margin: 0; padding: 0;
+      }
+      #map {
+        width: 100%;
+        height: 200px;
+      }
+
+      #logs {
+        padding: 4px;
+      }
+      .log {
+        border: 1px solid #ccc;
+        width: 200px;
+        overflow: hidden;
+        float: left;
+        margin-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="logs"></div>
+    <script>
+      $(function(){
+        if (!('geolocation' in navigator)) { return; }
+
+        var startTime = (new Date()).getTime(),
+          mapElm = document.querySelector('#map'),
+          map = new google.maps.Map(mapElm, {zoom: 15, center: new google.maps.LatLng(35.675888,139.744858)}),
+          circle = null;
+
+        navigator.geolocation.watchPosition(function(position){
+          var elm = $('<div>').addClass('log'),
+            list = $('<dl>').appendTo(elm),
+              latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude),
+              circleOptions = {
+                center: latlng,
+                fillColor: '#f00',
+                fillOpacity: 0.6,
+                map: map,
+                radius: position.coords.accuracy,
+                strokeColor: '#f00',
+                strokeWeight: 1
+              };
+          map.setCenter(latlng);
+          if (!circle) {
+            circle = new google.maps.Circle(circleOptions);
+          } else {
+            circle.setOptions(circleOptions);
+          }
+
+          list.append($('<dt>').text('経過'));
+          list.append($('<dd>').text((position.timestamp - startTime) / 1000 ));
+          list.append($('<dt>').text('緯度'));
+          list.append($('<dd>').text(position.coords.latitude));
+          list.append($('<dt>').text('経度'));
+          list.append($('<dd>').text(position.coords.longitude));
+          list.append($('<dt>').text('誤差(m)'));
+          list.append($('<dd>').text(position.coords.accuracy));
+          
+          $('#logs').prepend(elm);
+        });
+      });
+    </script>
+  </body>
+</html>
